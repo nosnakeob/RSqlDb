@@ -1,0 +1,16 @@
+[package]
+name = "RSqlDB"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+members = [
+    "parser"
+]
+resolver = "2"
+
+[workspace.dependencies]
+anyhow = "*"
+
+[dependencies]
+
