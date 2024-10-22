@@ -63,11 +63,9 @@ impl<'a> Lexer<'a> {
         let mut val = String::new();
 
         loop {
-            let c = self.inner.next()?;
-            if c == '\'' {
-                break;
-            } else {
-                val.push(c);
+            match self.inner.next()? {
+                '\'' => break,
+                c => val.push(c),
             }
         }
 
@@ -101,7 +99,7 @@ impl<'a> Lexer<'a> {
             val.push(c);
         }
 
-        if let Some(c) = self.inner.next_if(|&c| c.is_alphanumeric()) {
+        while let Some(c) = self.inner.next_if(|&c| c.is_alphanumeric()) {
             val.push(c);
         }
 
@@ -136,7 +134,7 @@ mod tests {
     fn test_create() {
         let input = "CREATE TABLE tbl (
             id1 INT PRIMARY KEY,
-            id2 INTEGER,
+            id21 INTEGER,
             c1 BOOL NULL,
             c2 FLOAT NOT NULL,
             c3 VARCHAR DEFAULT 'abc'
@@ -155,7 +153,7 @@ mod tests {
             Token::Keyword(Keyword::Primary),
             Token::Keyword(Keyword::Key),
             Token::Symbol(Symbol::Comma),
-            Token::Ident("id2".to_string()),
+            Token::Ident("id21".to_string()),
             Token::Keyword(Keyword::Integer),
             Token::Symbol(Symbol::Comma),
             Token::Ident("c1".to_string()),
