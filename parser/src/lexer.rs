@@ -31,21 +31,21 @@ use crate::token::{Keyword, Symbol, Token};
 /// SELECT * FROM table_name;
 /// ```
 pub struct Lexer<'a> {
-    iter: Peekable<Chars<'a>>,
+    inner: Peekable<Chars<'a>>,
 }
 
 impl<'a> Lexer<'a> {
     pub fn new(input: &'a str) -> Self {
         Self {
-            iter: input.chars().peekable(),
+            inner: input.chars().peekable(),
         }
     }
 
 
     fn scan(&mut self) -> Result<Option<Token>> {
-        while self.iter.next_if(|c| c.is_whitespace()).is_some() {}
+        while self.inner.next_if(|c| c.is_whitespace()).is_some() {}
 
-        Ok(match self.iter.peek() {
+        Ok(match self.inner.peek() {
             Some('\'') => self.scan_string(),
             Some(c) if c.is_ascii_digit() => self.scan_number(),
             Some(c) if c.is_alphabetic() => self.scan_keyword_or_ident(),
@@ -56,14 +56,14 @@ impl<'a> Lexer<'a> {
 
     // 'xxx' -> xxx
     fn scan_string(&mut self) -> Option<Token> {
-        if self.iter.next_if(|&c| c == '\'').is_none() {
+        if self.inner.next_if(|&c| c == '\'').is_none() {
             return None;
         }
 
         let mut val = String::new();
 
         loop {
-            let c = self.iter.next()?;
+            let c = self.inner.next()?;
             if c == '\'' {
                 break;
             } else {
@@ -78,14 +78,14 @@ impl<'a> Lexer<'a> {
     fn scan_number(&mut self) -> Option<Token> {
         let mut num = String::new();
 
-        while let Some(c) = self.iter.next_if(|&c| c.is_numeric()) {
+        while let Some(c) = self.inner.next_if(|&c| c.is_numeric()) {
             num.push(c);
         }
 
-        if let Some(sep) = self.iter.next_if(|&c| c == '.') {
+        if let Some(sep) = self.inner.next_if(|&c| c == '.') {
             num.push(sep);
 
-            while let Some(c) = self.iter.next_if(|&c| c.is_numeric()) {
+            while let Some(c) = self.inner.next_if(|&c| c.is_numeric()) {
                 num.push(c);
             }
         }
@@ -97,11 +97,11 @@ impl<'a> Lexer<'a> {
     fn scan_keyword_or_ident(&mut self) -> Option<Token> {
         let mut val = String::new();
 
-        while let Some(c) = self.iter.next_if(|&c| c.is_alphabetic()) {
+        while let Some(c) = self.inner.next_if(|&c| c.is_alphabetic()) {
             val.push(c);
         }
 
-        if let Some(c) = self.iter.next_if(|&c| c.is_alphanumeric()) {
+        if let Some(c) = self.inner.next_if(|&c| c.is_alphanumeric()) {
             val.push(c);
         }
 
@@ -109,11 +109,11 @@ impl<'a> Lexer<'a> {
     }
 
     fn scan_symbol(&mut self) -> Option<Token> {
-        let val = self.iter.peek()?;
+        let val = self.inner.peek()?;
 
         let symbol = Symbol::try_from(val).ok()?;
 
-        self.iter.next();
+        self.inner.next();
 
         Some(Token::Symbol(symbol))
     }
