@@ -1,0 +1,12 @@
+[package]
+name = "planner"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = { workspace = true }
+derive-new = { workspace = true }
+common = { path = "../common" }
+
+[dev-dependencies]
+parser = { path = "../parser" }

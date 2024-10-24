@@ -3,8 +3,9 @@
 ## todo
 
 - [x] Parser
-  - 基于迭代器的词法语法解析器
-- [ ] Planner
+    - 基于迭代器
+- [x] Planner
+    - Statement -> Node
 - [ ] Optimizer
 - [ ] Executor
 - [ ] Transaction

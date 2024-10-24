@@ -7,11 +7,13 @@ edition = "2021"
 members = [
     "common",
     "parser",
+    "planner"
 ]
 resolver = "2"
 
 [workspace.dependencies]
 anyhow = "*"
+derive-new = "*"
 
 [dependencies]
 
