@@ -50,7 +50,7 @@ impl<'a> Lexer<'a> {
             Some(c) if c.is_ascii_digit() => self.scan_number(),
             Some(c) if c.is_alphabetic() => self.scan_keyword_or_ident(),
             Some(c) if c.is_ascii_punctuation() => self.scan_symbol(),
-            _ => bail!("Unexpected EOF"),
+            _ => bail!("Unexpected end of input"),
         })
     }
 
