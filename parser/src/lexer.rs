@@ -3,33 +3,7 @@ use std::iter::Peekable;
 use std::str::{Chars, FromStr};
 use crate::token::{Keyword, Symbol, Token};
 
-/// support sql:
-/// 1.
-/// ```sql
-/// CREATE TABLE table_name (
-/// [ column_name data_type[column_constraint [...]]
-/// [, ...]
-/// );
-/// where data_type is:
-///     - BOOLEAN(BOOL) : true false
-///     - FLOAT(DOUBLE)
-///     - INTEGER(INT)
-///     - STRING(TEXT,VARCHAR)
-///
-/// where column_constraint is:
-/// [NOT NULL | NULL | DEFAULT expr]
-/// ```
-///
-/// 2.
-/// ```sql
-/// INSERT INTO table_name (column1, column2,...)
-/// VALUES (value1, value2,...)
-/// ```
-///
-/// 3.
-/// ```sql
-/// SELECT * FROM table_name;
-/// ```
+// 词法分析
 pub struct Lexer<'a> {
     inner: Peekable<Chars<'a>>,
 }

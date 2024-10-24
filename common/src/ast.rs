@@ -21,17 +21,17 @@ pub struct Column {
 
 #[derive(Debug, PartialEq)]
 pub enum Expression {
-    Constant(Constant)
+    Const(Const)
 }
 
-impl From<Constant> for Expression {
-    fn from(c: Constant) -> Self {
-        Self::Constant(c)
+impl From<Const> for Expression {
+    fn from(c: Const) -> Self {
+        Self::Const(c)
     }
 }
 
 #[derive(Debug, PartialEq)]
-pub enum Constant {
+pub enum Const {
     Null,
     Boolean(bool),
     Integer(i64),

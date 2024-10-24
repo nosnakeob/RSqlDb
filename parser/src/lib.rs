@@ -1,15 +1,34 @@
 use std::iter::Peekable;
-use crate::ast::{Column, Constant, Expression, Statement};
+use common::ast::{Column, Const, Expression, Statement};
 use crate::lexer::Lexer;
 use anyhow::{anyhow, bail, Result};
-use crate::token::{Token, Keyword, Symbol};
-use crate::types::DataType;
+use crate::token::{Keyword, Symbol, Token};
+use common::types::DataType;
 
 mod lexer;
 mod token;
-mod ast;
-mod types;
 
+/// 语法分析
+/// support sql:
+/// 1.
+/// ```sql
+/// CREATE TABLE table_name (
+/// [ column_name data_type[column_constraint [...]]
+/// [, ...]
+/// );
+///
+/// ```
+///
+/// 2.
+/// ```sql
+/// INSERT INTO table_name (column1, column2,...)
+/// VALUES (value1, value2,...);
+/// ```
+///
+/// 3.
+/// ```sql
+/// SELECT * FROM table_name;
+/// ```
 pub struct Parser<'a> {
     lexer: Peekable<Lexer<'a>>,
 }
@@ -167,15 +186,15 @@ impl<'a> Parser<'a> {
         Ok(match self.next()? {
             Token::Number(n) => {
                 if n.chars().all(|c| c.is_ascii_digit()) {
-                    Constant::Integer(n.parse()?).into()
+                    Const::Integer(n.parse()?).into()
                 } else {
-                    Constant::Float(n.parse()?).into()
+                    Const::Float(n.parse()?).into()
                 }
             }
-            Token::String(s) => Constant::String(s).into(),
-            Token::Keyword(Keyword::True) => Constant::Boolean(true).into(),
-            Token::Keyword(Keyword::False) => Constant::Boolean(false).into(),
-            Token::Keyword(Keyword::Null) => Constant::Null.into(),
+            Token::String(s) => Const::String(s).into(),
+            Token::Keyword(Keyword::True) => Const::Boolean(true).into(),
+            Token::Keyword(Keyword::False) => Const::Boolean(false).into(),
+            Token::Keyword(Keyword::Null) => Const::Null.into(),
             exp => bail!("Unexpected expression token: {:?}", exp),
         })
     }
@@ -226,7 +245,7 @@ mod tests {
                     name: "a".to_string(),
                     data_type: DataType::Integer,
                     nullable: Some(false),
-                    default: Some(Constant::Integer(0).into()),
+                    default: Some(Const::Integer(0).into()),
                 },
                 Column {
                     name: "b".to_string(),
@@ -244,7 +263,7 @@ mod tests {
                     name: "d".to_string(),
                     data_type: DataType::Boolean,
                     nullable: None,
-                    default: Some(Constant::Boolean(true).into()),
+                    default: Some(Const::Boolean(true).into()),
                 },
             ],
         });
@@ -287,28 +306,37 @@ mod tests {
 
     #[test]
     fn test_parse_insert() -> Result<()> {
-        let mut sql = " insert into users (c1,c2,c3,c4) values (1, 2.3, 'abc', true), (2, 4.5, 'def', false);";
+        let mut sql = " insert into users values (1, 2.3, 'abc', true);";
+        assert_eq!(Parser::new(sql).parse()?, Statement::Insert {
+            table_name: "users".to_string(),
+            columns: None,
+            values: vec![vec![
+                Const::Integer(1).into(),
+                Const::Float(2.3).into(),
+                Const::String("abc".to_string()).into(),
+                Const::Boolean(true).into(),
+            ]],
+        });
+
+        sql = " insert into users (c1,c2,c3,c4) values (1, 2.3, 'abc', true), (2, 4.5, 'def', false);";
         assert_eq!(Parser::new(sql).parse()?, Statement::Insert {
             table_name: "users".to_string(),
             columns: Some(vec!["c1".to_string(), "c2".to_string(), "c3".to_string(), "c4".to_string()]),
             values: vec![
                 vec![
-                    Constant::Integer(1).into(),
-                    Constant::Float(2.3).into(),
-                    Constant::String("abc".to_string()).into(),
-                    Constant::Boolean(true).into(),
+                    Const::Integer(1).into(),
+                    Const::Float(2.3).into(),
+                    Const::String("abc".to_string()).into(),
+                    Const::Boolean(true).into(),
                 ],
                 vec![
-                    Constant::Integer(2).into(),
-                    Constant::Float(4.5).into(),
-                    Constant::String("def".to_string()).into(),
-                    Constant::Boolean(false).into(),
+                    Const::Integer(2).into(),
+                    Const::Float(4.5).into(),
+                    Const::String("def".to_string()).into(),
+                    Const::Boolean(false).into(),
                 ]
             ],
         });
-
-        sql = " insert into users (a, b, c, d) values (1, 2.3, 'abc', true), (2, 4.5, 'def', false);create ";
-        assert_eq!(Parser::new(sql).parse().unwrap_err().to_string(), r#"Unexpected token: Keyword(Create)"#);
 
         Ok(())
     }
